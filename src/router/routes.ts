@@ -1,4 +1,4 @@
 export const routes = {
-    repositories: '/',
-    pullRequests: '/pull-requests',
-}
+  repositories: '/',
+  pullRequests: '/pull-requests',
+};
