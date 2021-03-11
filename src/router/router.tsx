@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
 import { routes } from './routes';
 
-export const Router = () => {
+export const Router: FunctionComponent = () => {
   return (
     <BrowserRouter>
       <nav>
