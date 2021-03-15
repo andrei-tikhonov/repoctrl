@@ -5,6 +5,7 @@ export type Pull = {
     state: string;
     title: string;
     user?: string;
+    number: number;
 };
 
 export type Repository = {

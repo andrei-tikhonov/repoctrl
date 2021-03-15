@@ -82,6 +82,21 @@ export class AppStore {
     await this.update();
   }
 
+  async merge(
+    repo: string,
+    pull_number: number,
+    owner?: string
+  ): Promise<void> {
+    try {
+      if (owner) {
+        await this.service.mergePullRequest(owner, repo, pull_number);
+      }
+    } catch (error) {
+      this.onError(error);
+    }
+    await this.update();
+  }
+
   async init(): Promise<void> {
     if (!this.repositories) {
       await this.update();

@@ -33,21 +33,29 @@ export class OctokitService {
         owner: owner?.login,
         id,
         pulls: pulls[i]
-          .filter(({ state }) => state === 'open')
-          .map(({ body, html_url, id, state, title, user }) => ({
+          .map(({ body, html_url, id, state, title, user, number }) => ({
             body,
             html_url,
             id,
             state,
             title,
             user: user?.login,
+            number,
           })),
       })
     );
   }
 
-  mergePullRequest(): Promise<void> {
-    return Promise.resolve(undefined);
+  mergePullRequest(
+    owner: string,
+    repo: string,
+    pull_number: number
+  ): Promise<OctokitResponse<unknown>> {
+    return octokit.pulls.merge({
+      owner,
+      repo,
+      pull_number,
+    });
   }
 
   removeRepository(
