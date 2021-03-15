@@ -13,13 +13,13 @@ export const AddRepository: FunctionComponent<AddRepositoryProps> = ({
   const onSubmit = ({ name }: FormInputs) => add(name);
 
   return (
-    <div>
+    <>
       <h2>Add repository</h2>
       <form onSubmit={handleSubmit(onSubmit)}>
         <input name="name" ref={register({ required: true })} />
         {errors.name && <span>This field is required</span>}
-        <input type="submit" />
+        <input type="submit" value='Add' />
       </form>
-    </div>
+    </>
   );
 };
