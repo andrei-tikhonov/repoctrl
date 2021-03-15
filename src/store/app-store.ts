@@ -4,7 +4,7 @@ import { OctokitService } from '../api/octokit-service';
 
 type AppStoreStatus = 'none' | 'wait' | 'ready' | 'error';
 
-class AppStore {
+export class AppStore {
   loaderStatus: AppStoreStatus = 'none';
   loaderError?: Error;
   service: OctokitService;
@@ -35,12 +35,14 @@ class AppStore {
   }
 
   get issues(): number {
-    return (
-      this.repositories?.reduce(
-        (previousValue: number, { open_issues_count }: Repository) =>
-          previousValue + open_issues_count,
-        0
-      ) || 0
+    if (!this.repositories) {
+      return 0;
+    }
+
+    return this.repositories?.reduce(
+      (previousValue: number, { open_issues_count }: Repository) =>
+        previousValue + open_issues_count,
+      0
     );
   }
 
@@ -74,6 +76,21 @@ class AppStore {
   async addRepository(name: string): Promise<void> {
     try {
       await this.service.addRepository(name);
+    } catch (error) {
+      this.onError(error);
+    }
+    await this.update();
+  }
+
+  async merge(
+    repo: string,
+    pull_number: number,
+    owner?: string
+  ): Promise<void> {
+    try {
+      if (owner) {
+        await this.service.mergePullRequest(owner, repo, pull_number);
+      }
     } catch (error) {
       this.onError(error);
     }
