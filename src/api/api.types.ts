@@ -1,17 +1,11 @@
+
 export type Repository = {
+  id: number;
   name: string;
+  html_url: string;
+  open_issues_count: number;
 };
 
 export type PullRequest = {
   name: string;
 };
-
-export interface DataService {
-  listRepositories: () => Promise<Repository[]>;
-  listPullRequests: () => Promise<PullRequest[]>;
-  issuesCount: () => Promise<number>;
-  addRepository: () => Promise<void>;
-  removeRepository: () => Promise<void>;
-  mergePullRequest: () => Promise<void>;
-  closePullRequest: () => Promise<void>;
-}

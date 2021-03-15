@@ -1,24 +1,47 @@
 import { makeObservable, observable, action, computed } from 'mobx';
-import { DataService } from '../api/api.types';
+import { Repository } from '../api/api.types';
+import { OctokitService } from '../api/octokit-service';
 
 type AppStoreStatus = 'none' | 'wait' | 'ready' | 'error';
 
-export class AppStore {
+class AppStore {
   loaderStatus: AppStoreStatus = 'none';
   loaderError?: Error;
-  service: DataService;
+  service: OctokitService;
+  repositories?: Repository[];
 
-  constructor(service: DataService) {
+  constructor(service: OctokitService) {
     this.service = service;
+    this.addRepository = this.addRepository.bind(this);
 
     makeObservable(this, {
       loaderStatus: observable,
       loaderError: observable,
+      repositories: observable,
       onWait: action,
       onReady: action,
       onError: action,
+      setRepositories: action,
       errorMessage: computed,
+      issues: computed,
     });
+  }
+
+  get errorMessage(): string {
+    if (this.loaderError instanceof Error) {
+      return this.loaderError.message;
+    }
+    return '';
+  }
+
+  get issues(): number {
+    return (
+      this.repositories?.reduce(
+        (previousValue: number, { open_issues_count }: Repository) =>
+          previousValue + open_issues_count,
+        0
+      ) || 0
+    );
   }
 
   onWait(): void {
@@ -35,10 +58,45 @@ export class AppStore {
     this.loaderError = error;
   }
 
-  get errorMessage(): string {
-    if (this.loaderError instanceof Error) {
-      return this.loaderError.message;
+  setRepositories(repositories: Repository[]): void {
+    this.repositories = repositories;
+  }
+
+  async removeRepository(name: string, owner: string): Promise<void> {
+    try {
+      await this.service.removeRepository(name, owner);
+    } catch (error) {
+      this.onError(error);
     }
-    return '';
+    await this.update();
+  }
+
+  async addRepository(name: string): Promise<void> {
+    try {
+      await this.service.addRepository(name);
+    } catch (error) {
+      this.onError(error);
+    }
+    await this.update();
+  }
+
+  async init(): Promise<void> {
+    if (!this.repositories) {
+      await this.update();
+    }
+  }
+
+  async update(): Promise<void> {
+    this.onWait();
+    try {
+      const repositories = await this.service.listRepositories();
+      this.setRepositories(repositories);
+      this.onReady();
+    } catch (error) {
+      this.onError(error);
+    }
   }
 }
+
+const service = new OctokitService();
+export const appStore = new AppStore(service);
